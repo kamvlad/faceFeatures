@@ -22,7 +22,8 @@ MOUTH_RIGHT_CORNER = 12
 MOUTH_CENTER_TOP_LIP = 13
 MOUTH_CENTER_BOTTOM_LIP = 14
 
-featureName = { LEFT_EYE_CENTER : 'left_eye_center',
+allFeatures = range(15)
+featuresNames = { LEFT_EYE_CENTER : 'left_eye_center',
                 RIGHT_EYE_CENTER : 'right_eye_center',
                 LEFT_EYE_INNER_CORNER : 'left_eye_inner_corner',
                 LEFT_EYE_OUTER_CORNER : 'left_eye_outer_corner',
@@ -38,23 +39,28 @@ featureName = { LEFT_EYE_CENTER : 'left_eye_center',
                 MOUTH_CENTER_TOP_LIP : 'mouth_center_top_lip',
                 MOUTH_CENTER_BOTTOM_LIP : 'mouth_center_bottom_lip' }
 
-class Face:
-    def __init__(self, id, sample):
-        self.id = id
-        imageData = [int(x) for x in sample['Image'].split(' ')]
-        self.image = np.array(imageData)
-        self.image = np.reshape(self.image, IMAGE_SIZE)
-        self.features = {}
+def stringToImage(str):
+    imageData = [int(x) for x in str.split(' ')]
+    image = np.array(imageData)
+    return np.reshape(image, IMAGE_SIZE)
 
-        for key, value in featureName.items():
+class Face:
+    def __init__(self, id, imageData):
+        self.id = id
+        self.image = stringToImage(imageData)
+        self.features = {}
+    def setFeaturesFromSample(self, sample):
+        for key, value in featuresNames.items():
             x = sample[value + '_x']
             y = sample[value + '_y']
             self.features[key] = (x, y)
+    def setFeaturePosition(self, featureId, position):
+        self.features[featureId] = position
     def getFeatureImage(self, featureId, rectSize):
         pos = self.features[featureId]
         rect = geometry.rectangleByCenter(pos[0], pos[1], rectSize[0], rectSize[1])
         return rect.sliceImage(self.image)
-    def getFeaturesList(self):
+    def getFeaturesValues(self):
         rslt = []
         for key, value in self.features.items():
             rslt += [value]
@@ -65,15 +71,19 @@ class Face:
         y = p[1] - position[1]
         return x * x + y * y
 
-class FacesDB:
+class TrainingsetDB:
     def __init__(self, filename = 'training.csv'):
         self.dataset = pd.read_csv(filename)
         self.faces = {}
     def rows(self):
         return len(self.dataset)
+    def faces(self):
+        return self.faces.values()
     def getFace(self, imageId):
         if not imageId in self.faces:
-            self.faces[imageId] = Face(imageId, self.dataset.iloc[imageId])
+            sample = self.dataset.iloc[imageId - 1]
+            self.faces[imageId] = Face(imageId - 1, sample['Image'])
+            self.faces[imageId].setFeaturesFromSample(sample)
         return self.faces[imageId]
     def randomSubImage(self, imageId, rectSize, excludeFeatures = [], areaOfOverlapThreshold = 0):
         #TODO test it!
@@ -91,27 +101,42 @@ class FacesDB:
                 featureRect = geometry.rectangleByCenter(x, y, rectSize[0], rectSize[1])
                 if rectCandidate.ao(featureRect) > areaOfOverlapThreshold:
                     foundOverlap = True
+                    break
         return rectCandidate.sliceImage(face.image)
 
-#TODO Implement it
-class TestResults:
-    def __init__(self, testFilname='test.csv', lookupTableFilename = 'IdLookupTable.csv'):
+class TestsetDB:
+    def __init__(self, testFilename='test.csv', lookupTableFilename = 'IdLookupTable.csv'):
         self.lockupTable = pd.read_csv(lookupTableFilename)
-        self.table = [0.0] * len(self.lockupTable)
-
-
-    def setValue(self, imageId, feature, value):
+        imagesData = pd.read_csv(testFilename)
+        self.faces = {}
+        for row in imagesData.iterrows():
+            self.faces[row[1]['ImageId']] = Face(row[1]['ImageId'], row[1]['Image'])
+    def rows(self):
+        return len(self.faces)
+    def getFaces(self):
+        return self.faces.values()
+    def getFeaturesCount(self, imageId):
+        return sum(self.lockupTable['ImageId'] == imageId) / 2
+    def getFace(self, imageId):
+        return self.faces[imageId]
+    def getRowId(self, imageId, featureName):
         rowId = self.lockupTable[
-            (self.lockupTable['ImageId'] == imageId) & (self.lockupTable['FeatureName'] == name)]
+            (self.lockupTable['ImageId'] == imageId) & (self.lockupTable['FeatureName'] == featureName)]
         if len(rowId) != 0:
-            self.table[rowId.iloc[0]['RowId'] - 1] = value
-            return True
+            return rowId.iloc[0]['RowId'] - 1
         else:
-            return False
-
+            return None
     def write(self, filename='test_results.csv'):
+        table = [0.0] * len(self.lockupTable)
+        for imageId, face in self.faces.iteritems():
+            for featureId, position in face.features.iteritems():
+                rowIdX = self.getRowId(imageId, featuresNames[featureId] + '_x')
+                rowIdY = self.getRowId(imageId, featuresNames[featureId] + '_y')
+                if rowIdX != None:
+                    table[rowIdX] = position[0]
+                    table[rowIdY] = position[1]
         fd = open(filename, 'w')
         fd.write('RowId,Location\n')
-        for i in range(len(self.table)):
-            fd.write("%d,%f\n" % (i + 1, self.table[i]))
+        for i in range(len(table)):
+            fd.write("%d,%f\n" % (i + 1, table[i]))
         fd.close()
