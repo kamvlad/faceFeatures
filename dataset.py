@@ -52,7 +52,7 @@ class Face:
             self.features[key] = (x, y)
     def getFeatureImage(self, featureId, rectSize):
         pos = self.features[featureId]
-        rect = geometry.rectangleByCenter(pos[0], pos[1], rectSize[0], rectSize[1]).coordsTupleInt()
+        rect = geometry.rectangleByCenter(pos[0], pos[1], rectSize[0], rectSize[1])
         return rect.sliceImage(self.image)
     def getFeaturesList(self):
         rslt = []
