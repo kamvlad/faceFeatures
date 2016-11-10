@@ -8,7 +8,7 @@ def scale(x, maxX):
     return 2.0 * x / float(maxX) - 1.0
 
 def main():
-    writeNoFullFeatured = True
+    writeNoFullFeatured = False
     shuffleSet = True
     sSeed = 1223455
 
@@ -22,13 +22,14 @@ def main():
 
     rowId = 0
     for face in trainingDB.facesList():
-        if writeNoFullFeatured or face.getFeaturesCount() == 15:
+        if writeNoFullFeatured or face.allFeaturesPresent():
             trainingData[rowId, :] = (face.image.astype(np.float32) / 255.0).reshape(imageSize[0] * imageSize[1])
             for featureId, position in face.features.items():
                 trainingY[rowId, featureId * 2] = scale(position[0], imageSize[0])
                 trainingY[rowId, featureId * 2 + 1] = scale(position[1], imageSize[1])
             rowId += 1
 
+    print(rowId, ' from ', trainingDB.rows(), ' selected')
     trainingData = trainingData[:rowId,:]
     trainingY =  trainingY[:rowId]
 

@@ -65,8 +65,11 @@ class Face:
         for key, value in self.features.items():
             rslt += [value]
         return rslt
-    def getFeaturesCount(self):
-        return len(self.features)
+    def allFeaturesPresent(self):
+        for key, value in self.features.items():
+            if np.isnan(value[0]) or np.isnan(value[1]):
+                return False
+        return True
     def distSquare(self, featureId, position):
         p = self.features[featureId]
         x = p[0] - position[0]
