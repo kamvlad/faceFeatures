@@ -65,6 +65,8 @@ class Face:
         for key, value in self.features.items():
             rslt += [value]
         return rslt
+    def getFeaturesCount(self):
+        return len(self.features)
     def distSquare(self, featureId, position):
         p = self.features[featureId]
         x = p[0] - position[0]
@@ -77,8 +79,11 @@ class TrainingsetDB:
         self.faces = {}
     def rows(self):
         return len(self.dataset)
-    def faces(self):
-        return self.faces.values()
+    def facesList(self):
+        r = []
+        for row in self.dataset.iterrows():
+            r += [self.getFace(row[0])]
+        return r
     def getFace(self, imageId):
         if not imageId in self.faces:
             sample = self.dataset.iloc[imageId - 1]
@@ -128,7 +133,7 @@ class TestsetDB:
             return None
     def write(self, filename='test_results.csv'):
         table = [0.0] * len(self.lockupTable)
-        for imageId, face in self.faces.iteritems():
+        for imageId, face in self.faces.items():
             for featureId, position in face.features.iteritems():
                 rowIdX = self.getRowId(imageId, featuresNames[featureId] + '_x')
                 rowIdY = self.getRowId(imageId, featuresNames[featureId] + '_y')
