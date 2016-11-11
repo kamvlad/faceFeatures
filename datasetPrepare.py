@@ -8,7 +8,7 @@ def scale(x, maxX):
     return 2.0 * x / float(maxX) - 1.0
 
 def main():
-    writeNoFullFeatured = False
+    writeNoFullFeatured = True
     shuffleSet = True
     sSeed = 1223455
 
