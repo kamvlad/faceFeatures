@@ -137,7 +137,7 @@ class TestsetDB:
     def write(self, filename='test_results.csv'):
         table = [0.0] * len(self.lockupTable)
         for imageId, face in self.faces.items():
-            for featureId, position in face.features.iteritems():
+            for featureId, position in face.features.items():
                 rowIdX = self.getRowId(imageId, featuresNames[featureId] + '_x')
                 rowIdY = self.getRowId(imageId, featuresNames[featureId] + '_y')
                 if rowIdX != None:
