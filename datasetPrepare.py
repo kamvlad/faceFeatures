@@ -8,7 +8,7 @@ def scale(x, maxX):
     return 2.0 * x / float(maxX) - 1.0
 
 def main():
-    writeNoFullFeatured = True
+    writeNoFullFeatured = False
     shuffleSet = True
     sSeed = 1223455
 
@@ -39,7 +39,7 @@ def main():
         trainingData[idxs] = trainingData
         trainingY[idxs] = trainingY
 
-    np.savez('faceFeatures_9216_normalized_labels_as_coord.npz', data=trainingData, y=trainingY)
+    np.savez('faceFeatures_9216_normalized_labels_as_coord_full_data.npz', data=trainingData, y=trainingY)
 
 
 if __name__ == '__main__':
