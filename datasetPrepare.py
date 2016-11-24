@@ -39,7 +39,7 @@ def main():
         trainingData[idxs] = trainingData
         trainingY[idxs] = trainingY
 
-    np.savez('faceFeatures_9216_normalized_labels_as_coord_full_data.npz', data=trainingData, y=trainingY)
+    np.savez('faceFeatures_%d_normalized_labels_as_coord_full_data.npz'%(rowId,), data=trainingData, y=trainingY)
 
 
 if __name__ == '__main__':
