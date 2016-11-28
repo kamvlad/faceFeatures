@@ -9,10 +9,14 @@ https://www.kaggle.com/c/facial-keypoints-detection/data
 
 Implementation not work
 
-Nets with feature coords output
+Nets with feature coords output:
+    
     -   mlp
+    
     -   convNet1
+    
     -   convNet2
+    
     -   Find_position - uses convolution net for localize 1.0
     
 ------ Sliding window approaches
