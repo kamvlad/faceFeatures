@@ -1,31 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import random
-def main():
-    epochs=1000
-    n=10
-    dataX,dataY=create_data(n)
-    trainX,trainY,testX,testY=divide_data(dataX,dataY,0.9)
-    x=tf.placeholder(tf.float32,(None,n*n))
-    y_=tf.placeholder(tf.float32,(None,2))
-    w1=tf.Variable(tf.truncated_normal([n*n,2],stddev=0.1))
-    b1=tf.Variable(tf.constant(0.1,shape=[2]))
-    h1=tf.matmul(x,w1)#+b1
-    loss=tf.sqrt(tf.reduce_mean((h1-y_)**2))
-    train_step=tf.train.AdamOptimizer(0.05).minimize(loss)
-    sess=tf.InteractiveSession()
-    saver=tf.train.Saver()
-    #saver.restore(sess,'loc_sess')
-    sess.run(tf.initialize_all_variables())
-    for i in range(epochs):
-        train_step.run(feed_dict={x:trainX,y_:trainY})
-        if i%100==0:
-            train_error=loss.eval(feed_dict={x:trainX,y_:trainY})
-            test_error=loss.eval(feed_dict={x:testX,y_:testY})
-            print 'train = ',train_error,', test = ',test_error
-    weights=w1.eval()
-    print np.round(weights.reshape((n,n,-1)))
-    saver.save(sess,'loc_sess')
 
 def main():
     epochs=1000
