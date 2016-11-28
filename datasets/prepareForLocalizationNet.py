@@ -1,6 +1,6 @@
 from random import seed, shuffle
 
-import dataset
+import data
 import numpy as np
 from numpy.core.numeric import empty
 
@@ -14,8 +14,8 @@ def main():
 
     seed(sSeed)
 
-    trainingDB = dataset.TrainingsetDB()
-    imageSize = dataset.IMAGE_SIZE
+    trainingDB = data.TrainingsetDB()
+    imageSize = data.IMAGE_SIZE
     trainingData = np.zeros((trainingDB.rows(), imageSize[0] * imageSize[1]), dtype=np.float32)
     trainingY = empty((trainingDB.rows(), 15 * 2), dtype=np.float32)
     trainingY.fill(np.nan)
@@ -39,7 +39,7 @@ def main():
         trainingData[idxs] = trainingData
         trainingY[idxs] = trainingY
 
-    np.savez('faceFeatures_%d_normalized_labels_as_coord_full_data.npz'%(rowId,), data=trainingData, y=trainingY)
+    np.savez('datasets/localizationNet_%d_data.npz' % (rowId,), data=trainingData, y=trainingY)
 
 
 if __name__ == '__main__':

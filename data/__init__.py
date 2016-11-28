@@ -1,8 +1,9 @@
+import pandas as pd
 from random import randint
 
-import pandas as pd
 import numpy as np
-import geometry
+
+from utils import geometry
 
 IMAGE_SIZE = (96, 96)
 
@@ -77,7 +78,7 @@ class Face:
         return x * x + y * y
 
 class TrainingsetDB:
-    def __init__(self, filename = 'training.csv'):
+    def __init__(self, filename = 'data/training.csv'):
         self.dataset = pd.read_csv(filename)
         self.faces = {}
     def rows(self):
@@ -85,9 +86,10 @@ class TrainingsetDB:
     def facesList(self):
         r = []
         for row in self.dataset.iterrows():
-            r += [self.getFace(row[0])]
+            r += [self.getFace(row[0] + 1)]
         return r
     def getFace(self, imageId):
+        assert (imageId > 0)
         if not imageId in self.faces:
             sample = self.dataset.iloc[imageId - 1]
             self.faces[imageId] = Face(imageId - 1, sample['Image'])
@@ -113,7 +115,7 @@ class TrainingsetDB:
         return rectCandidate.sliceImage(face.image)
 
 class TestsetDB:
-    def __init__(self, testFilename='test.csv', lookupTableFilename = 'IdLookupTable.csv'):
+    def __init__(self, testFilename='data/test.csv', lookupTableFilename = 'data/IdLookupTable.csv'):
         self.lockupTable = pd.read_csv(lookupTableFilename)
         imagesData = pd.read_csv(testFilename)
         self.faces = {}
@@ -124,10 +126,13 @@ class TestsetDB:
     def getFaces(self):
         return self.faces.values()
     def getFeaturesCount(self, imageId):
+        assert (imageId > 0)
         return sum(self.lockupTable['ImageId'] == imageId) / 2
     def getFace(self, imageId):
+        assert (imageId > 0)
         return self.faces[imageId]
     def getRowId(self, imageId, featureName):
+        assert (imageId > 0)
         rowId = self.lockupTable[
             (self.lockupTable['ImageId'] == imageId) & (self.lockupTable['FeatureName'] == featureName)]
         if len(rowId) != 0:
